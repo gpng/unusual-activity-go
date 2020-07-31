@@ -93,6 +93,7 @@ func (t *Ticker) getData() error {
 	q.Add("interval", "1d")
 
 	req.URL.RawQuery = q.Encode()
+	// log.Println(req.URL.String())
 
 	res, err := client.Do(req)
 	if err != nil {
@@ -139,6 +140,9 @@ func Download() {
 	}
 	for _, ticker := range tickers {
 		ticker.getData()
+		// if err != nil {
+		// 	log.Println(err)
+		// }
 	}
 }
 
