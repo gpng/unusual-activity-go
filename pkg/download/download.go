@@ -14,10 +14,6 @@ import (
 	"github.com/montanaflynn/stats"
 )
 
-const months = 5
-const cutoff = 8
-const days = 3
-
 // Ticker struct
 type Ticker struct {
 	Name   string
@@ -75,11 +71,7 @@ type dataResponse struct {
 	Chart dataResponseChart `json:"chart"`
 }
 
-func (t *Ticker) getData() error {
-	endDate := time.Now().UTC()
-	endDate = endDate.Truncate(24 * time.Hour)
-	startDate := endDate.AddDate(0, -months, 0)
-
+func (t *Ticker) getData(endDate time.Time, startDate time.Time, cutoff int, days int) error {
 	client := &http.Client{}
 
 	req, err := http.NewRequest("GET", baseURL+t.Code+".SI", nil)
@@ -118,28 +110,34 @@ func (t *Ticker) getData() error {
 	if err != nil {
 		return err
 	}
-	anomalyCutoff := std * cutoff
+	anomalyCutoff := std * float64(cutoff)
 	limit := mean + anomalyCutoff
 
 	lastVolumes := volume[len(volume)-days:]
 	for _, volume := range lastVolumes {
 		if volume > limit {
-			log.Printf("%s.SI\thttps://sg.finance.yahoo.com/quote/%s.SI\t%s - Unusually high volume", t.Code, t.Code, t.Name)
+			log.Printf("%s.SI\thttps://sg.finance.yahoo.com/quote/%s.SI\t%s\tUnusually high volume", t.Code, t.Code, t.Name)
 		}
 	}
 
 	return nil
 }
 
-// Download ticker
-func Download() {
+// CheckAnomalies for every ticker in sgx
+func CheckAnomalies(months int, cutoff int, days int) {
 	defer timeTrack(time.Now(), "Finding anomalies")
+	log.Printf("Number of months: %d", months)
+	log.Printf("Standard deviations: %d", cutoff)
+	log.Printf("Last trading days: %d", days)
+	endDate := time.Now().UTC()
+	endDate = endDate.Truncate(24 * time.Hour)
+	startDate := endDate.AddDate(0, -months, 0)
 	tickers, err := getTickers()
 	if err != nil {
 		log.Println(err)
 	}
 	for _, ticker := range tickers {
-		ticker.getData()
+		ticker.getData(endDate, startDate, cutoff, days)
 		// if err != nil {
 		// 	log.Println(err)
 		// }
