@@ -3,7 +3,7 @@ package download
 import (
 	"encoding/csv"
 	"encoding/json"
-	"fmt"
+	"errors"
 	"io"
 	"log"
 	"net/http"
@@ -100,7 +100,7 @@ func (t *Ticker) getData(endDate time.Time, startDate time.Time, cutoff int, day
 
 	volume := body.Chart.Result[0].Indicators.Quote[0].Volume
 	if len(volume) < days {
-		return fmt.Errorf("Not enough trading days")
+		return errors.New("Not enough trading days")
 	}
 	mean, err := stats.Mean(volume)
 	if err != nil {
