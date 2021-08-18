@@ -3,12 +3,15 @@ GOBUILD=$(GOCMD) build
 
 INPUTFILE=cmd/main.go
 OUTPUTFILE=unusual_activity
+OUTPUTFILEMAC=unusual_activity_mac
 OUTPUTFOLDER=build
 
 # compile binaries
 compile:
 	@echo "=============building binary============="
 	$(GOBUILD) -ldflags="-s -w" -o $(OUTPUTFOLDER)/$(OUTPUTFILE) $(INPUTFILE)
+	@echo "=============building mac binary============="
+	GOOS=darwin GOARCH=amd64 $(GOBUILD) -ldflags="-s -w" -o $(OUTPUTFOLDER)/$(OUTPUTFILEMAC) $(INPUTFILE)
 	@echo "=============building exe============="
 	GOOS=windows GOARCH=amd64 $(GOBUILD) -ldflags="-s -w" -o $(OUTPUTFOLDER)/$(OUTPUTFILE).exe $(INPUTFILE)
 	@echo "=============copy data folders to build============="
